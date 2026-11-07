@@ -1,5 +1,7 @@
 # Playwright-AI-Ecomm-Tests
 
+[![Playwright CI](https://github.com/DevdattNadre30/playwright-ai-ecomm-tests/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/DevdattNadre30/playwright-ai-ecomm-tests/actions/workflows/playwright.yml)
+
 An extensible Playwright + TypeScript framework for browser and API testing of e-commerce applications. It includes page objects, shared fixtures, environment configuration, fallback locators, CI pipelines, and test reports.
 
 ## Requirements
@@ -31,6 +33,7 @@ npm test
 | Command | Purpose |
 | --- | --- |
 | `npm test` | Run all tests in Chrome-compatible Chromium, Microsoft Edge, and Firefox |
+| `npm run test:ui` | Run UI specs (excluding API-only specs) |
 | `npm run test:manual:ui` | Run automated manual cases UI-001 through UI-010 |
 | `npm run test:api` | Run API specs, including automated manual API cases, without browser-project dependencies |
 | `npm run perf:smoke` | Run the one-VU k6 API smoke profile |
@@ -118,7 +121,11 @@ The Planner, Generator, Healer, Validator, and Reporter are deterministic TypeSc
 
 ## CI/CD and Docker
 
-- `.github/workflows/playwright.yml` runs type-checking, installs browsers, runs all projects for pushes and pull requests, then uploads reports.
+- `.github/workflows/playwright.yml` runs on pushes to `main`, pull requests, and manual dispatch. The Setup job installs dependencies and type-checks; API tests run before the Chromium, Firefox, and Edge UI matrix; the Publish Reports job combines Allure results, publishes pass/fail statistics, and archives artifacts even when test jobs fail.
+- Pushes and pull requests run the complete API and UI suites by default. From **Actions → Playwright CI → Run workflow**, choose `dev`, `integration`, or `preprod` and a suite: `all`, `smoke`, `regression`, `api`, or `ui`.
+- The UI job runs sequential browser matrix entries to avoid concurrent tests racing over the application's shared cart; API execution completes first, and UI tests still run when API tests fail.
+- CI uses `src/config/config.json`'s `activeEnvironment` when no environment input or `TEST_ENV` repository variable is supplied. Optional repository variable `BASE_URL` overrides the selected URL; a GitHub secret named `BASE_URL` may be used for restricted endpoints. Do not store credentials in the workflow or config.
+- Downloadable artifacts include per-browser Playwright HTML reports, Allure results and the combined Allure report, JUnit/XML and JSON outputs, logs, screenshots, videos, and traces. The run summary is also added to the Actions job summary.
 - `Jenkinsfile` includes checkout, install, build, execution, report publishing, and artifact archiving. Configure the listed Jenkins plugins and a Linux agent with permission to install Playwright browser dependencies.
 - `Dockerfile` installs the locked Node dependencies and all three browser engines. Provide `TEST_ENV`/`BASE_URL` with `docker run -e ...` for deployment-specific runs.
 

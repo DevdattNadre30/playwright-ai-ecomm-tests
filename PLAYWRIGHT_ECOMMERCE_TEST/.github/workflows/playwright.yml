@@ -1,0 +1,415 @@
+name: Playwright CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - integration
+          - preprod
+      suite:
+        description: Test Suite
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - smoke
+          - regression
+          - api
+          - ui
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+
+jobs:
+  setup:
+    name: Setup and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      test-env: ${{ steps.resolve-environment.outputs.test-env }}
+    env:
+      TEST_ENV: ${{ inputs.environment || vars.TEST_ENV }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate configured environment
+        id: resolve-environment
+        run: |
+          environment="$(printf '%s' "${TEST_ENV:-}" | tr '[:upper:]' '[:lower:]')"
+          if [ -z "$environment" ]; then
+            environment="$(node -p "require('./src/config/config.json').activeEnvironment")"
+          fi
+          case "$environment" in
+            dev|integration|preprod) ;;
+            *) echo "Unsupported TEST_ENV: $environment"; exit 1 ;;
+          esac
+          echo "TEST_ENV=$environment" >> "$GITHUB_ENV"
+          echo "test-env=$environment" >> "$GITHUB_OUTPUT"
+
+      - name: Type-check framework
+        run: npm run build
+
+  api-tests:
+    name: API tests
+    needs: setup
+    if: ${{ inputs.suite != 'ui' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TEST_ENV: ${{ needs.setup.outputs.test-env }}
+      SUITE: ${{ inputs.suite || 'all' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve environment and base URL
+        env:
+          BASE_URL_OVERRIDE: ${{ vars.BASE_URL || secrets.BASE_URL }}
+        run: |
+          environment="$(printf '%s' "${TEST_ENV:-}" | tr '[:upper:]' '[:lower:]')"
+          if [ -z "$environment" ]; then
+            environment="$(node -p "require('./src/config/config.json').activeEnvironment")"
+          fi
+          echo "TEST_ENV=$environment" >> "$GITHUB_ENV"
+          if [ -n "${BASE_URL_OVERRIDE:-}" ]; then
+            echo "BASE_URL=$BASE_URL_OVERRIDE" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run API smoke tests
+        if: ${{ env.SUITE == 'smoke' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:api -- --grep "@smoke" 2>&1 | tee test-results/api-smoke.log
+
+      - name: Run API regression tests
+        if: ${{ env.SUITE == 'regression' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:api -- --grep "@regression" 2>&1 | tee test-results/api-regression.log
+
+      - name: Run all API tests
+        if: ${{ env.SUITE == 'all' || env.SUITE == 'api' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:api 2>&1 | tee test-results/api.log
+
+      - name: Upload API Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-api
+          path: test-results/html-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload API Allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api
+          path: test-results/allure-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload API test results, logs, screenshots, videos, and traces
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-api
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  ui-tests:
+    name: UI tests (${{ matrix.browser }})
+    needs:
+      - setup
+      - api-tests
+    if: ${{ always() && needs.setup.result == 'success' && (needs.api-tests.result == 'success' || needs.api-tests.result == 'failure' || needs.api-tests.result == 'skipped') && inputs.suite != 'api' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TEST_ENV: ${{ needs.setup.outputs.test-env }}
+      SUITE: ${{ inputs.suite || 'all' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - browser: chromium
+            project: chrome
+          - browser: firefox
+            project: firefox
+          - browser: edge
+            project: edge
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers and system dependencies
+        run: npx playwright install --with-deps
+
+      - name: Install Microsoft Edge
+        if: ${{ matrix.project == 'edge' }}
+        run: npx playwright install msedge --with-deps
+
+      - name: Resolve environment and base URL
+        env:
+          BASE_URL_OVERRIDE: ${{ vars.BASE_URL || secrets.BASE_URL }}
+        run: |
+          environment="$(printf '%s' "${TEST_ENV:-}" | tr '[:upper:]' '[:lower:]')"
+          if [ -z "$environment" ]; then
+            environment="$(node -p "require('./src/config/config.json').activeEnvironment")"
+          fi
+          echo "TEST_ENV=$environment" >> "$GITHUB_ENV"
+          if [ -n "${BASE_URL_OVERRIDE:-}" ]; then
+            echo "BASE_URL=$BASE_URL_OVERRIDE" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run UI smoke tests
+        if: ${{ env.SUITE == 'smoke' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:smoke -- --project=${{ matrix.project }} --no-deps 2>&1 | tee test-results/ui-smoke.log
+
+      - name: Run UI regression tests
+        if: ${{ env.SUITE == 'regression' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:regression -- --project=${{ matrix.project }} --no-deps 2>&1 | tee test-results/ui-regression.log
+
+      - name: Run all UI tests
+        if: ${{ env.SUITE == 'all' || env.SUITE == 'ui' }}
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          npm run test:ui -- --project=${{ matrix.project }} 2>&1 | tee test-results/ui.log
+
+      - name: Upload UI Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: test-results/html-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload UI Allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: test-results/allure-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload UI test results, logs, screenshots, videos, and traces
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  publish-reports:
+    name: Publish reports and execution summary
+    needs:
+      - setup
+      - api-tests
+      - ui-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TEST_ENV: ${{ needs.setup.outputs.test-env }}
+      SUITE: ${{ inputs.suite || 'all' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up Java for Allure
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download test result artifacts
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: ci-artifacts/test-results
+          merge-multiple: false
+
+      - name: Download Playwright HTML report artifacts
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: playwright-report-*
+          path: ci-artifacts/playwright-reports
+          merge-multiple: false
+
+      - name: Download Allure result artifacts
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: ci-artifacts/allure-results
+          merge-multiple: false
+
+      - name: Combine Allure results and generate report
+        if: ${{ always() }}
+        run: |
+          mkdir -p test-results/allure-results
+          if [ -d ci-artifacts/allure-results ]; then
+            find ci-artifacts/allure-results -type f -exec cp '{}' test-results/allure-results/ \;
+          fi
+          if find test-results/allure-results -type f -print -quit | grep -q .; then
+            npx allure generate test-results/allure-results --clean -o test-results/allure-report
+          else
+            echo "No Allure results were produced by the selected suite."
+          fi
+
+      - name: Publish execution summary and pass/fail statistics
+        if: ${{ always() }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const root = "ci-artifacts/test-results";
+          const totals = { passed: 0, failed: 0, skipped: 0, flaky: 0, files: 0 };
+          function walk(directory) {
+            if (!fs.existsSync(directory)) return [];
+            return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+              const fullPath = path.join(directory, entry.name);
+              return entry.isDirectory() ? walk(fullPath) : [fullPath];
+            });
+          }
+          for (const file of walk(root).filter((entry) => path.basename(entry) === "results.json")) {
+            try {
+              const stats = JSON.parse(fs.readFileSync(file, "utf8")).stats || {};
+              totals.passed += stats.expected || 0;
+              totals.failed += stats.unexpected || 0;
+              totals.skipped += stats.skipped || 0;
+              totals.flaky += stats.flaky || 0;
+              totals.files += 1;
+            } catch (error) {
+              console.error(`Unable to parse ${file}: ${error.message}`);
+              process.exitCode = 1;
+            }
+          }
+          const total = totals.passed + totals.failed + totals.skipped + totals.flaky;
+          const percent = total ? ((totals.passed + totals.flaky) / total * 100).toFixed(1) : "n/a";
+          const lines = [
+            "## Playwright CI execution summary",
+            "",
+            `- **Environment:** ${process.env.TEST_ENV || "config.json activeEnvironment"}`,
+            `- **Suite:** ${process.env.SUITE || "all"}`,
+            `- **Result files:** ${totals.files}`,
+            `- **Total results:** ${total}`,
+            `- **Passed:** ${totals.passed}`,
+            `- **Failed:** ${totals.failed}`,
+            `- **Flaky:** ${totals.flaky}`,
+            `- **Skipped:** ${totals.skipped}`,
+            `- **Pass rate (including flaky):** ${percent}%`,
+            "",
+            "Reports, JUnit/JSON outputs, logs, screenshots, videos, and traces are available in the workflow artifacts.",
+          ];
+          const summary = `${lines.join("\n")}\n`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log(summary);
+          NODE
+        env:
+          TEST_ENV: ${{ needs.setup.outputs.test-env || 'config.json activeEnvironment' }}
+          SUITE: ${{ inputs.suite || 'all' }}
+
+      - name: Upload combined Allure report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: test-results/allure-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload complete test results and JUnit/JSON reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ci-artifacts/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Playwright reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-reports
+          path: ci-artifacts/playwright-reports/
+          if-no-files-found: warn
+          retention-days: 14
