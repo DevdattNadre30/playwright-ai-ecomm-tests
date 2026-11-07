@@ -1,0 +1,238 @@
+name: Playwright UI and API Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to execute
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - integration
+          - preprod
+      suite:
+        description: Test suite
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - regression
+          - api
+          - ui
+          - all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  TEST_ENV: ${{ github.event.inputs.environment || vars.TEST_ENV || secrets.TEST_ENV || 'dev' }}
+  SUITE: ${{ github.event.inputs.suite || 'smoke' }}
+
+jobs:
+  ui-tests:
+    name: UI tests (${{ github.event.inputs.suite || 'smoke' }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.suite == 'smoke' || inputs.suite == 'regression' || inputs.suite == 'ui' || inputs.suite == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Validate and normalize environment
+        env:
+          BASE_URL: ${{ vars.BASE_URL || secrets.BASE_URL }}
+        run: |
+          environment="$(printf '%s' "$TEST_ENV" | tr '[:upper:]' '[:lower:]')"
+          case "$environment" in
+            dev|integration|preprod) ;;
+            *) echo "Unsupported TEST_ENV: $TEST_ENV"; exit 1 ;;
+          esac
+          echo "TEST_ENV=$environment" >> "$GITHUB_ENV"
+          if [ -n "${BASE_URL:-}" ]; then
+            echo "BASE_URL=$BASE_URL" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run UI smoke tests
+        if: ${{ env.SUITE == 'smoke' }}
+        run: |
+          set -o pipefail
+          npm run test:ui -- --grep "@smoke" 2>&1 | tee test-results/ui-smoke.log
+
+      - name: Run UI regression tests
+        if: ${{ env.SUITE == 'regression' }}
+        run: |
+          set -o pipefail
+          npm run test:ui -- --grep "@regression" 2>&1 | tee test-results/ui-regression.log
+
+      - name: Run all UI tests
+        if: ${{ env.SUITE == 'ui' || env.SUITE == 'all' }}
+        run: |
+          set -o pipefail
+          npm run test:ui 2>&1 | tee test-results/ui.log
+
+      - name: Generate Allure HTML report
+        if: ${{ always() }}
+        run: |
+          if [ -d test-results/allure-results ] && find test-results/allure-results -type f -print -quit | grep -q .; then
+            npx allure generate test-results/allure-results --clean -o test-results/allure-report
+          else
+            echo "No Allure result files were generated."
+          fi
+
+      - name: Upload Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-ui
+          path: test-results/html-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-ui
+          path: test-results/allure-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-ui
+          path: test-results/allure-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload UI test results, logs, screenshots, videos, and traces
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-ui
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  api-tests:
+    name: API tests (${{ github.event.inputs.suite || 'smoke' }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.suite == 'smoke' || inputs.suite == 'regression' || inputs.suite == 'api' || inputs.suite == 'all' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Validate and normalize environment
+        env:
+          BASE_URL: ${{ vars.BASE_URL || secrets.BASE_URL }}
+        run: |
+          environment="$(printf '%s' "$TEST_ENV" | tr '[:upper:]' '[:lower:]')"
+          case "$environment" in
+            dev|integration|preprod) ;;
+            *) echo "Unsupported TEST_ENV: $TEST_ENV"; exit 1 ;;
+          esac
+          echo "TEST_ENV=$environment" >> "$GITHUB_ENV"
+          if [ -n "${BASE_URL:-}" ]; then
+            echo "BASE_URL=$BASE_URL" >> "$GITHUB_ENV"
+          fi
+
+      - name: Run API smoke tests
+        if: ${{ env.SUITE == 'smoke' }}
+        run: |
+          set -o pipefail
+          npm run test:api -- --grep "@smoke" 2>&1 | tee test-results/api-smoke.log
+
+      - name: Run API regression tests
+        if: ${{ env.SUITE == 'regression' }}
+        run: |
+          set -o pipefail
+          npm run test:api -- --grep "@regression" 2>&1 | tee test-results/api-regression.log
+
+      - name: Run all API tests
+        if: ${{ env.SUITE == 'api' || env.SUITE == 'all' }}
+        run: |
+          set -o pipefail
+          npm run test:api 2>&1 | tee test-results/api.log
+
+      - name: Generate Allure HTML report
+        if: ${{ always() }}
+        run: |
+          if [ -d test-results/allure-results ] && find test-results/allure-results -type f -print -quit | grep -q .; then
+            npx allure generate test-results/allure-results --clean -o test-results/allure-report
+          else
+            echo "No Allure result files were generated."
+          fi
+
+      - name: Upload Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-api
+          path: test-results/html-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-api
+          path: test-results/allure-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api
+          path: test-results/allure-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload API test results and logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-api
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14

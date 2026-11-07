@@ -1,0 +1,36 @@
+- generic [ref=f5e1]:
+  - navigation [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - link "ShopLab" [ref=f5e4] [cursor=pointer]:
+        - /url: /products
+      - generic [ref=f5e5]:
+        - link "Products" [ref=f5e6] [cursor=pointer]:
+          - /url: /products
+        - link "Cart" [ref=f5e7] [cursor=pointer]:
+          - /url: /cart
+        - link "AI Chat" [ref=f5e8] [cursor=pointer]:
+          - /url: /chat
+  - alert [ref=f5e120]
+  - main [ref=f5e122]:
+    - heading "Shopping Cart" [level=1] [ref=f5e123]
+    - generic [ref=f5e124]:
+      - generic [ref=f5e126]:
+        - generic [ref=f5e127]: 🎧
+        - generic [ref=f5e128]:
+          - link [ref=f5e129] [cursor=pointer]:
+            - /url: /products/p1
+            - paragraph [ref=f5e130]: Wireless Bluetooth Headphones
+          - paragraph [ref=f5e131]: $79.99 each
+        - generic [ref=f5e132]:
+          - button "Decrease quantity" [ref=f5e133]: −
+          - generic [ref=f5e134]: "2"
+          - button "Increase quantity" [active] [ref=f5e135]: +
+        - paragraph [ref=f5e136]: $159.98
+        - button "Remove" [ref=f5e137]
+      - generic [ref=f5e138]:
+        - generic [ref=f5e139]:
+          - generic [ref=f5e140]: Order Total
+          - generic [ref=f5e141]: $159.98
+        - generic [ref=f5e142]:
+          - button "Clear Cart" [ref=f5e143]
+          - button "Checkout" [ref=f5e144]

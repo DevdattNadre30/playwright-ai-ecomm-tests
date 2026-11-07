@@ -1,0 +1,27 @@
+- generic [active] [ref=f12e1]:
+  - navigation [ref=f12e2]:
+    - generic [ref=f12e3]:
+      - link "ShopLab" [ref=f12e4] [cursor=pointer]:
+        - /url: /products
+      - generic [ref=f12e5]:
+        - link "Products" [ref=f12e6] [cursor=pointer]:
+          - /url: /products
+        - link "Cart" [ref=f12e7] [cursor=pointer]:
+          - /url: /cart
+        - link "AI Chat" [ref=f12e8] [cursor=pointer]:
+          - /url: /chat
+  - main [ref=f12e9]:
+    - link "← Back to Products" [ref=f12e10] [cursor=pointer]:
+      - /url: /products
+    - generic [ref=f12e11]:
+      - generic [ref=f12e12]: ⌨️
+      - generic [ref=f12e13]:
+        - generic [ref=f12e14]: Computing
+        - heading "Mechanical Keyboard" [level=1] [ref=f12e15]
+        - paragraph [ref=f12e16]: Full-size mechanical keyboard with tactile blue switches, RGB backlighting per key, and a durable aluminium frame built for professionals and gamers.
+        - generic [ref=f12e17]:
+          - generic [ref=f12e18]: $129.99
+          - generic [ref=f12e19]: ⭐ 4.7 / 5
+        - paragraph [ref=f12e20]: In Stock — 18 available
+        - button "Add to Cart" [ref=f12e22]
+  - alert [ref=f12e23]

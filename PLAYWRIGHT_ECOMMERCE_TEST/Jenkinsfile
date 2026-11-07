@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+    options {
+        timestamps()
+        timeout(time: 45, unit: 'MINUTES')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Install') {
+            steps {
+                sh 'npm ci'
+                sh 'npx playwright install --with-deps chromium firefox msedge'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+        stage('Execute Tests') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        stage('Publish Reports') {
+            steps {
+                publishHTML(target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'test-results/html-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright HTML Report'
+                ])
+            }
+        }
+        stage('Archive Artifacts') {
+            steps {
+                archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+                junit testResults: 'test-results/junit.xml', allowEmptyResults: true
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}

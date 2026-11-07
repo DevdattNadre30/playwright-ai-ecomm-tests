@@ -1,0 +1,20 @@
+- generic [active] [ref=f4e1]:
+  - navigation [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - link "ShopLab" [ref=f4e4] [cursor=pointer]:
+        - /url: /products
+      - generic [ref=f4e5]:
+        - link "Products" [ref=f4e6] [cursor=pointer]:
+          - /url: /products
+        - link "Cart" [ref=f4e7] [cursor=pointer]:
+          - /url: /cart
+        - link "AI Chat" [ref=f4e8] [cursor=pointer]:
+          - /url: /chat
+  - main [ref=f4e9]:
+    - heading "AI Shopping Assistant" [level=1] [ref=f4e10]
+    - generic [ref=f4e11]: Which keyboard do you sell?
+    - generic [ref=f4e22]: "Failed to connect to Ollama: fetch failed"
+    - generic [ref=f4e16]:
+      - textbox "Ask about our products… (Enter to send, Shift+Enter for newline)" [ref=f4e17]
+      - button "Send" [disabled] [ref=f4e18]
+  - alert [ref=f4e19]

@@ -1,0 +1,9 @@
+node_modules
+dist
+test-results
+playwright-report
+allure-report
+.git
+.env
+.env.*
+!.env.local.example

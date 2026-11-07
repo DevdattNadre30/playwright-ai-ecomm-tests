@@ -1,0 +1,14 @@
+node_modules/
+dist/
+playwright-report/
+allure-report/
+test-results/*
+!test-results/.gitkeep
+reports/*
+!reports/.gitkeep
+.env
+.env.*
+!.env.local.example
+!.env.local
+!.env.production.example
+*.log

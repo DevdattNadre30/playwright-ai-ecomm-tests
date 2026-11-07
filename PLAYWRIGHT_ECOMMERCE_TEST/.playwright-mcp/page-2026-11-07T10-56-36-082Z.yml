@@ -1,0 +1,139 @@
+- generic [active] [ref=f10e1]:
+  - navigation [ref=f10e2]:
+    - generic [ref=f10e3]:
+      - link "ShopLab" [ref=f10e4] [cursor=pointer]:
+        - /url: /products
+      - generic [ref=f10e5]:
+        - link "Products" [ref=f10e6] [cursor=pointer]:
+          - /url: /products
+        - link "Cart" [ref=f10e7] [cursor=pointer]:
+          - /url: /cart
+        - link "AI Chat" [ref=f10e8] [cursor=pointer]:
+          - /url: /chat
+  - main [ref=f10e9]:
+    - generic [ref=f10e10]:
+      - heading "All Products" [level=1] [ref=f10e11]
+      - paragraph [ref=f10e12]: 8 products available
+    - searchbox "Search products…" [ref=f10e14]
+    - generic [ref=f10e15]:
+      - generic [ref=f10e16]:
+        - generic [ref=f10e17]: 🎧
+        - generic [ref=f10e18]:
+          - generic [ref=f10e19]: Audio
+          - link [ref=f10e20] [cursor=pointer]:
+            - /url: /products/p1
+            - heading "Wireless Bluetooth Headphones" [level=3] [ref=f10e21]
+          - paragraph [ref=f10e22]: Premium over-ear headphones with active noise cancellation, 30-hour battery life, and crystal-clear audio. Perfect for work and travel.
+          - generic [ref=f10e23]:
+            - generic [ref=f10e24]: $79.99
+            - generic [ref=f10e25]: ⭐ 4.5
+          - generic [ref=f10e26]:
+            - button "Add to Cart" [ref=f10e27]
+            - link "Details" [ref=f10e28] [cursor=pointer]:
+              - /url: /products/p1
+      - generic [ref=f10e29]:
+        - generic [ref=f10e30]: ⌨️
+        - generic [ref=f10e31]:
+          - generic [ref=f10e32]: Computing
+          - link [ref=f10e33] [cursor=pointer]:
+            - /url: /products/p2
+            - heading "Mechanical Keyboard" [level=3] [ref=f10e34]
+          - paragraph [ref=f10e35]: Full-size mechanical keyboard with tactile blue switches, RGB backlighting per key, and a durable aluminium frame built for professionals and gamers.
+          - generic [ref=f10e36]:
+            - generic [ref=f10e37]: $129.99
+            - generic [ref=f10e38]: ⭐ 4.7
+          - generic [ref=f10e39]:
+            - button "Add to Cart" [ref=f10e40]
+            - link "Details" [ref=f10e41] [cursor=pointer]:
+              - /url: /products/p2
+      - generic [ref=f10e42]:
+        - generic [ref=f10e43]: 🖱️
+        - generic [ref=f10e44]:
+          - generic [ref=f10e45]: Computing
+          - link [ref=f10e46] [cursor=pointer]:
+            - /url: /products/p3
+            - heading "Ergonomic Wireless Mouse" [level=3] [ref=f10e47]
+          - paragraph [ref=f10e48]: Sculpted ergonomic design with precision optical sensor, silent click buttons, 70-day battery life, and multi-device connectivity via USB or Bluetooth.
+          - generic [ref=f10e49]:
+            - generic [ref=f10e50]: $49.99
+            - generic [ref=f10e51]: ⭐ 4.4
+          - generic [ref=f10e52]:
+            - button "Add to Cart" [ref=f10e53]
+            - link "Details" [ref=f10e54] [cursor=pointer]:
+              - /url: /products/p3
+      - generic [ref=f10e55]:
+        - generic [ref=f10e56]: 📷
+        - generic [ref=f10e57]:
+          - generic [ref=f10e58]: Computing
+          - link [ref=f10e59] [cursor=pointer]:
+            - /url: /products/p4
+            - heading "4K USB-C Webcam" [level=3] [ref=f10e60]
+          - paragraph [ref=f10e61]: Ultra-HD 4K webcam with autofocus, dual built-in noise-cancelling microphones, and HDR for video calls that look like you are in the room.
+          - generic [ref=f10e62]:
+            - generic [ref=f10e63]: $89.99
+            - generic [ref=f10e64]: ⭐ 4.3
+          - generic [ref=f10e65]:
+            - button "Add to Cart" [ref=f10e66]
+            - link "Details" [ref=f10e67] [cursor=pointer]:
+              - /url: /products/p4
+      - generic [ref=f10e68]:
+        - generic [ref=f10e69]: 💡
+        - generic [ref=f10e70]:
+          - generic [ref=f10e71]: Accessories
+          - link [ref=f10e72] [cursor=pointer]:
+            - /url: /products/p5
+            - heading "LED Desk Lamp" [level=3] [ref=f10e73]
+          - paragraph [ref=f10e74]: Smart LED lamp with adjustable colour temperature, 5 brightness levels, wireless charging base, and a USB-A port for phone charging.
+          - generic [ref=f10e75]:
+            - generic [ref=f10e76]: $39.99
+            - generic [ref=f10e77]: ⭐ 4.6
+          - generic [ref=f10e78]:
+            - button "Add to Cart" [ref=f10e79]
+            - link "Details" [ref=f10e80] [cursor=pointer]:
+              - /url: /products/p5
+      - generic [ref=f10e81]:
+        - generic [ref=f10e82]: 🎮
+        - generic [ref=f10e83]:
+          - generic [ref=f10e84]: Gaming
+          - link [ref=f10e85] [cursor=pointer]:
+            - /url: /products/p6
+            - heading "Gaming Controller" [level=3] [ref=f10e86]
+          - paragraph [ref=f10e87]: Wireless gamepad compatible with PC and mobile, featuring hall-effect thumbsticks, programmable back paddles, vibration haptics, and a 20-hour battery.
+          - generic [ref=f10e88]:
+            - generic [ref=f10e89]: $59.99
+            - generic [ref=f10e90]: ⭐ 4.8
+          - generic [ref=f10e91]:
+            - button "Add to Cart" [ref=f10e92]
+            - link "Details" [ref=f10e93] [cursor=pointer]:
+              - /url: /products/p6
+      - generic [ref=f10e94]:
+        - generic [ref=f10e95]: 🔋
+        - generic [ref=f10e96]:
+          - generic [ref=f10e97]: Accessories
+          - link [ref=f10e98] [cursor=pointer]:
+            - /url: /products/p7
+            - heading "Portable Power Bank 20000mAh" [level=3] [ref=f10e99]
+          - paragraph [ref=f10e100]: High-capacity power bank with 65W USB-C PD fast charging, dual USB-A outputs, and a built-in LED display showing remaining charge percentage.
+          - generic [ref=f10e101]:
+            - generic [ref=f10e102]: $34.99
+            - generic [ref=f10e103]: ⭐ 4.5
+          - generic [ref=f10e104]:
+            - button "Add to Cart" [ref=f10e105]
+            - link "Details" [ref=f10e106] [cursor=pointer]:
+              - /url: /products/p7
+      - generic [ref=f10e107]:
+        - generic [ref=f10e108]: 🔌
+        - generic [ref=f10e109]:
+          - generic [ref=f10e110]: Computing
+          - link [ref=f10e111] [cursor=pointer]:
+            - /url: /products/p8
+            - heading "USB-C Hub 7-in-1" [level=3] [ref=f10e112]
+          - paragraph [ref=f10e113]: Compact hub that expands a single USB-C port into HDMI 4K, 3× USB-A 3.0, SD/microSD card readers, and 100W USB-C power pass-through.
+          - generic [ref=f10e114]:
+            - generic [ref=f10e115]: $44.99
+            - generic [ref=f10e116]: ⭐ 4.2
+          - generic [ref=f10e117]:
+            - button "Add to Cart" [ref=f10e118]
+            - link "Details" [ref=f10e119] [cursor=pointer]:
+              - /url: /products/p8
+  - alert [ref=f10e120]

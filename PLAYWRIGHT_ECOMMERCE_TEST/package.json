@@ -1,0 +1,44 @@
+{
+  "name": "playwright-ai-ecomm-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scalable Playwright and TypeScript automation framework for e-commerce applications",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "playwright test",
+    "test:ui": "playwright test --project=chrome --no-deps",
+    "test:manual:ui": "playwright test tests/ui/manual-first-10.spec.ts",
+    "test:api": "playwright test --project=api --no-deps",
+    "perf:smoke": "k6 run src/performance/scenarios/smoke.js",
+    "perf:load": "k6 run src/performance/scenarios/load.js",
+    "perf:stress": "k6 run src/performance/scenarios/stress.js",
+    "perf:spike": "k6 run src/performance/scenarios/spike.js",
+    "perf:cloud": "k6 cloud run --local-execution src/performance/scenarios/load.js",
+    "perf:report": "node scripts/perf-report.mjs",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:sanity": "playwright test --grep @sanity",
+    "test:headed": "playwright test --headed",
+    "test:chrome": "playwright test --project=chrome",
+    "test:firefox": "playwright test --project=firefox",
+    "test:edge": "playwright test --project=edge",
+    "install:browsers": "playwright install chromium firefox msedge",
+    "allure": "allure generate test-results/allure-results --clean -o test-results/allure-report && allure open test-results/allure-report",
+    "report": "playwright show-report test-results/html-report",
+    "mcp:start": "npx --yes @playwright/mcp@0.0.84",
+    "agents": "tsx src/agents/cli.ts",
+    "docker:build": "docker build -t playwright-ai-ecomm-tests ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "26.6.6",
+    "allure-commandline": "2.46.1",
+    "allure-playwright": "3.14.0",
+    "dotenv": "18.0.9",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
