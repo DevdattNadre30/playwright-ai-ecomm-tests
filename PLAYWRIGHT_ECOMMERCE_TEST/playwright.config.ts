@@ -14,10 +14,11 @@ export default defineConfig({
   expect: { timeout: DEFAULT_TIMEOUT_MS },
   outputDir: "test-results/artifacts",
   reporter: [
+    ["line"],
     ["html", { outputFolder: "test-results/html-report", open: "never" }],
     ["json", { outputFile: "test-results/results.json" }],
     ["junit", { outputFile: "test-results/junit.xml" }],
-    ["allure-playwright", { outputFolder: "test-results/allure-results", detail: true }],
+    ["allure-playwright", { resultsDir: "test-results/allure-results", detail: true }],
     ["./src/reporting/dashboard-reporter.ts", { historyFile: "test-results/trend-history.json" }],
   ],
   use: {
