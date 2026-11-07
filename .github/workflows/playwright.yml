@@ -31,6 +31,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: PLAYWRIGHT_ECOMMERCE_TEST
+
 concurrency:
   group: playwright-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -56,6 +60,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: PLAYWRIGHT_ECOMMERCE_TEST/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -95,6 +100,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: PLAYWRIGHT_ECOMMERCE_TEST/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -138,7 +144,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-api
-          path: test-results/html-report/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/html-report/
           if-no-files-found: warn
           retention-days: 14
 
@@ -147,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-api
-          path: test-results/allure-results/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/allure-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -156,7 +162,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-api
-          path: test-results/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -191,6 +197,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: PLAYWRIGHT_ECOMMERCE_TEST/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -241,7 +248,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.browser }}
-          path: test-results/html-report/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/html-report/
           if-no-files-found: warn
           retention-days: 14
 
@@ -250,7 +257,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.browser }}
-          path: test-results/allure-results/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/allure-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -259,7 +266,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.browser }}
-          path: test-results/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -284,6 +291,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: PLAYWRIGHT_ECOMMERCE_TEST/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -300,7 +308,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: test-results-*
-          path: ci-artifacts/test-results
+          path: PLAYWRIGHT_ECOMMERCE_TEST/ci-artifacts/test-results
           merge-multiple: false
 
       - name: Download Playwright HTML report artifacts
@@ -309,7 +317,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: playwright-report-*
-          path: ci-artifacts/playwright-reports
+          path: PLAYWRIGHT_ECOMMERCE_TEST/ci-artifacts/playwright-reports
           merge-multiple: false
 
       - name: Download Allure result artifacts
@@ -318,7 +326,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: allure-results-*
-          path: ci-artifacts/allure-results
+          path: PLAYWRIGHT_ECOMMERCE_TEST/ci-artifacts/allure-results
           merge-multiple: false
 
       - name: Combine Allure results and generate report
@@ -392,7 +400,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: test-results/allure-report/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/test-results/allure-report/
           if-no-files-found: warn
           retention-days: 14
 
@@ -401,7 +409,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ci-artifacts/test-results/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/ci-artifacts/test-results/
           if-no-files-found: warn
           retention-days: 14
 
@@ -410,6 +418,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-reports
-          path: ci-artifacts/playwright-reports/
+          path: PLAYWRIGHT_ECOMMERCE_TEST/ci-artifacts/playwright-reports/
           if-no-files-found: warn
           retention-days: 14

@@ -121,7 +121,7 @@ The Planner, Generator, Healer, Validator, and Reporter are deterministic TypeSc
 
 ## CI/CD and Docker
 
-- `.github/workflows/playwright.yml` runs on pushes to `main`, pull requests, and manual dispatch. The Setup job installs dependencies and type-checks; API tests run before the Chromium, Firefox, and Edge UI matrix; the Publish Reports job combines Allure results, publishes pass/fail statistics, and archives artifacts even when test jobs fail.
+- [`../.github/workflows/playwright.yml`](../.github/workflows/playwright.yml) runs on pushes to `main`, pull requests, and manual dispatch. The Setup job installs dependencies and type-checks; API tests run before the Chromium, Firefox, and Edge UI matrix; the Publish Reports job combines Allure results, publishes pass/fail statistics, and archives artifacts even when test jobs fail.
 - Pushes and pull requests run the complete API and UI suites by default. From **Actions → Playwright CI → Run workflow**, choose `dev`, `integration`, or `preprod` and a suite: `all`, `smoke`, `regression`, `api`, or `ui`.
 - The UI job runs sequential browser matrix entries to avoid concurrent tests racing over the application's shared cart; API execution completes first, and UI tests still run when API tests fail.
 - CI uses `src/config/config.json`'s `activeEnvironment` when no environment input or `TEST_ENV` repository variable is supplied. Optional repository variable `BASE_URL` overrides the selected URL; a GitHub secret named `BASE_URL` may be used for restricted endpoints. Do not store credentials in the workflow or config.
